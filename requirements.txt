@@ -1,0 +1,8 @@
+requests
+llama-index
+llama-index-llms-groq
+llama-index-llms-gemini
+llama-index-llms-together
+python-dotenv
+llama-index-llms-huggingface
+llama-index-embeddings-huggingface

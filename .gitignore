@@ -1,0 +1,4 @@
+.env
+wiki_data
+*.zip
+*.html
