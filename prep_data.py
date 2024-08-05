@@ -23,7 +23,7 @@ class DataPreparation:
         self.engine = None
         self.metadata_obj = None
         self.program = None
-        self.llm = llms.ai71_falcon_11b_init()
+        self.llm = llms.selected_llm
         class TableInfo(BaseModel):
             table_name: str = Field(..., description="table name (must be underscores and NO spaces)")
             table_summary: str = Field(..., description="short, concise summary/caption of the table")
@@ -119,8 +119,8 @@ class DataPreparation:
             conn.commit()
 
     def prepare_data(self):
-        self.download_and_extract_data()
-        print("Data downloaded and extracted")
+        # self.download_and_extract_data()
+        # print("Data downloaded and extracted")
         self.process_csv_files()
         print("process_csv_files - done")
         self.program = self.create_llmtextcompletion_program(self.llm, prompts.get_tablename_summary_str)

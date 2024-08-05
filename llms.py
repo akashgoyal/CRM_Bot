@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-load_dotenv('../.env')
+load_dotenv('.env')
 ai71_api_key = os.getenv("AI71_API_KEY", None)
 ##
 from typing import Any, Optional
@@ -27,7 +27,12 @@ def ai71_falcon_11b_init():
     llm = AI71LLM(api_key=ai71_api_key, model="tiiuae/falcon-11b")
     return llm
 
-# my_llm = ai71_falcon_11b_init()
+def ai71_falcon_180b_init():
+    llm = AI71LLM(api_key=ai71_api_key, model="tiiuae/falcon-180b-chat")
+    return llm
+
+my_llm = ai71_falcon_11b_init()
+selected_llm = ai71_falcon_11b_init()
 
 # response = my_llm.stream_complete("Write a song about a ginger-colored fish on the moon.")
 # for r in response:
@@ -44,3 +49,4 @@ def hf_baai_bge_small_init():
 
 from llama_index.core import Settings
 Settings.embed_model = hf_baai_bge_small_init()
+# Settings.model = ai71_falcon_11b_init()

@@ -12,7 +12,7 @@ from pyvis.network import Network
 
 class QueryPipeline:
     def __init__(self):
-        self.llm = llms.ai71_falcon_11b_init()
+        self.llm = llms.selected_llm
         self.response_synthesis_prompt = PromptTemplate(prompts.response_synthesis_prompt_str)
         self.SqlModule_obj = sql_module_obj
         self.obj_retriever = self.SqlModule_obj.obj_retriever
