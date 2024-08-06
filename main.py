@@ -1,18 +1,26 @@
-from def_pipeline import QueryPipeline
 
-query_pipeline = QueryPipeline()
-qp = query_pipeline.create_query_pipeline()
-query_pipeline.visualize_query_pipeline(qp)
-print("Pipeline visualized")
+# AGENT 1
+# text2sql using llama-index 
+from agent1.def_pipeline import QueryPipeline
+class text2sql():
+    def __init__(self):
+        query_pipeline = QueryPipeline()
+        self.qp = query_pipeline.create_query_pipeline()
+        # query_pipeline.visualize_query_pipeline(self.qp)
+        # print("Pipeline visualized")
 
-# execute 
-while True:
-    query_str = input("Enter your query: ")
-    if query_str == "quit":
-        break
-    # query="What was the year that The Notorious B.I.G was signed to Bad Boy?"
-    # query="Who won best director in the 1972 academy awards"
-    # query="What was the term of Pasquale Preziosa?"
-    response = qp.run(query=query_str,)
-    # print(str(response))
-    print(response.message.content)
+    def text2sql_chat(self):
+        while True:
+            query_str = input("Enter your query: ")
+            if query_str == "quit":
+                break
+
+            response = self.qp.run(query=query_str,)
+            # print(str(response))
+            print(response.message.content)
+            # return response.message.content
+
+
+
+text2sql_obj = text2sql()
+text2sql_obj.text2sql_chat()

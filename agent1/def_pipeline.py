@@ -6,8 +6,8 @@ from llama_index.core.query_pipeline import (
 )
 from llama_index.core.prompts import PromptTemplate
 import llms
-import prompts
-from sql_module import sql_module_obj
+import agent1.prompts as prompts
+from agent1.sql_module import sql_module_obj
 from pyvis.network import Network
 
 class QueryPipeline:

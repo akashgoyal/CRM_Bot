@@ -8,13 +8,13 @@ from llama_index.core.program import LLMTextCompletionProgram, MultiModalLLMComp
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from sqlalchemy import ( create_engine, MetaData, Table, Column, String, Integer, )
 import re
-import prompts
+import agent1.prompts as prompts
 import llms
 
 #
 class DataPreparation:
-    def __init__(self, url, data_dir, tableinfo_dir, extracted_data_dir):
-        self.url = url
+    def __init__(self, data_dir, tableinfo_dir, extracted_data_dir):
+        # self.url = url
         self.data_dir = data_dir
         self.tableinfo_dir = tableinfo_dir
         self.extracted_data_dir = extracted_data_dir
@@ -27,6 +27,7 @@ class DataPreparation:
         class TableInfo(BaseModel):
             table_name: str = Field(..., description="table name (must be underscores and NO spaces)")
             table_summary: str = Field(..., description="short, concise summary/caption of the table")
+            table_columns: list[str] = Field(..., description="list of column names")
         self.TableInfo = TableInfo
         # create data_dir and tableinfo_dir if it doesn't exist
         os.makedirs(self.data_dir, exist_ok=True)
@@ -45,6 +46,7 @@ class DataPreparation:
         csv_files = sorted([f for f in self.extracted_data_dir.glob("*.csv")])
         for csv_file in csv_files:
             print(f"processing file: {csv_file}")
+            # csv_file_base = os.path.basename(csv_file)
             try:
                 df = pd.read_csv(csv_file)
                 self.dfs.append(df)
@@ -90,7 +92,11 @@ class DataPreparation:
                         pass
 
                 out_file = f"{self.tableinfo_dir}/{idx}_{table_name}.json"
-                json.dump(table_info.dict(), open(out_file, "w"))
+                #
+                json_data = table_info.dict()
+                json_data["table_columns"] = [self.sanitize_column_name(col) for col in json_data["table_columns"]]
+                #
+                json.dump(json_data, open(out_file, "w"))
             self.table_infos.append(table_info)
 
     def sanitize_column_name(self, col_name):

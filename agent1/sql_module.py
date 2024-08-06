@@ -1,4 +1,4 @@
-from prep_data import DataPreparation
+from agent1.prep_data import DataPreparation
 from pathlib import Path
 from typing import List
 
@@ -25,6 +25,8 @@ DEFAULT_TEXT_TO_SQL_TMPL = (
     "Be careful to not query for columns that do not exist. "
     "Pay attention to which column is in which table. "
     "Also, qualify column names with the table name when needed. "
+    "Aggregate data when asked for mutliple values of same column. Ex.-Male & Female count."
+    "Consider using the GROUP BY clause when aggregating data."
     "When comparing strings, always use the 'LIKE' operator instead of '='. "
     "For exact matches, you can use 'LIKE' with no wildcards. For partial matches, "
     "use '%' as a wildcard. For example:\n"
@@ -34,13 +36,16 @@ DEFAULT_TEXT_TO_SQL_TMPL = (
     "When comparing Date's, always convert input to format of date as 'yyyy-mm-dd'. "
     "use '%' as a wildcard. For example:\n"
     "  - on 18-Nov: WHERE column_name LIKE '%11-18%'\n"
+    "  - on Feb-2024: WHERE column_name LIKE '%2024-02%'\n"
+    "  - on June-18: WHERE column_name LIKE '%06-18%'\n"
+    "  - in January: WHERE column_name LIKE '%01%'\n"
     "  - in 2020: WHERE column_name LIKE '%2020%'\n"
     "You are required to use the following format, each taking one line:\n\n"
     "Question: Question here\n"
     "SQLQuery: SQL Query to run\n"
     "SQLResult: Result of the SQLQuery\n"
     "Answer: Final answer here\n\n"
-    "Only use tables listed below.\n"
+    "Only use tables & corresponding column_names listed below.\n"
     "{schema}\n\n"
     "Question: {query_str}\n"
     "SQLQuery: "
@@ -66,11 +71,11 @@ class SqlModule:
         self.sql_database = SQLDatabase(self.engine)
         self.table_node_mapping = SQLTableNodeMapping(self.sql_database)
         self.table_schema_objs = [
-            SQLTableSchema(table_name=t.table_name, context_str=t.table_summary)
+            SQLTableSchema(table_name=t.table_name, context_str=t.table_summary, column_names=t.table_columns)
             for t in self.table_infos
         ]
 
-        self.obj_index = ObjectIndex.from_objects(self.table_schema_objs, self.table_node_mapping, VectorStoreIndex,) 
+        self.obj_index = ObjectIndex.from_objects(self.table_schema_objs, self.table_node_mapping, VectorStoreIndex,)
         self.obj_retriever = self.obj_index.as_retriever(similarity_top_k=3)
         self.sql_retriever = SQLRetriever(self.sql_database)
 
@@ -88,6 +93,7 @@ class SqlModule:
                 table_info += table_opt_context
 
             context_strs.append(table_info)
+            print("context strs : ", context_strs)
         return "\n\n".join(context_strs)
 
     def parse_response_to_sql(self, response: ChatResponse) -> str:
@@ -112,12 +118,12 @@ class SqlModule:
         
 
 ## args
-url = "https://github.com/ppasupat/WikiTableQuestions/releases/download/v1.0.2/WikiTableQuestions-1.0.2-compact.zip"
-data_dir = Path("./wiki_data")
-tableinfo_dir = "./wiki_data/WikiTableQuestions_TableInfo"
-extracted_data_dir = Path("./wiki_data")
+# url = "https://github.com/ppasupat/WikiTableQuestions/releases/download/v1.0.2/WikiTableQuestions-1.0.2-compact.zip"
+data_dir = Path("./agent1/wiki_data")
+tableinfo_dir = "./agent1/wiki_data/WikiTableQuestions_TableInfo"
+extracted_data_dir = Path("./agent1/wiki_data")
 ##                       
-data_prep_obj = DataPreparation(url=url, data_dir=data_dir, tableinfo_dir=tableinfo_dir, extracted_data_dir=extracted_data_dir,)
+data_prep_obj = DataPreparation(data_dir=data_dir, tableinfo_dir=tableinfo_dir, extracted_data_dir=extracted_data_dir,)
 data_prep_obj.prepare_data()
 print("Data preparation - done - inside SQLModule")
 ##

@@ -32,9 +32,9 @@ def ai71_falcon_180b_init():
     return llm
 
 my_llm = ai71_falcon_11b_init()
-selected_llm = ai71_falcon_11b_init()
+selected_llm = ai71_falcon_180b_init()
 
-# response = my_llm.stream_complete("Write a song about a ginger-colored fish on the moon.")
+# response = selected_llm.stream_complete("Write a song about a ginger-colored fish on the moon.")
 # for r in response:
 #     print(r.delta, end="")
 
@@ -42,6 +42,7 @@ selected_llm = ai71_falcon_11b_init()
 # print(response)
 
 
+##
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 def hf_baai_bge_small_init():
     embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
@@ -49,4 +50,3 @@ def hf_baai_bge_small_init():
 
 from llama_index.core import Settings
 Settings.embed_model = hf_baai_bge_small_init()
-# Settings.model = ai71_falcon_11b_init()
