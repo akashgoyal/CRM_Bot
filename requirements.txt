@@ -6,3 +6,8 @@ llama-index-llms-together
 python-dotenv
 llama-index-llms-huggingface
 llama-index-embeddings-huggingface
+streamlit
+gradio
+uvicorn
+fastapi
+requests

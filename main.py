@@ -1,26 +1,27 @@
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from main_agent1 import text2sql
 
-# AGENT 1
-# text2sql using llama-index 
-from agent1.def_pipeline import QueryPipeline
-class text2sql():
-    def __init__(self):
-        query_pipeline = QueryPipeline()
-        self.qp = query_pipeline.create_query_pipeline()
-        # query_pipeline.visualize_query_pipeline(self.qp)
-        # print("Pipeline visualized")
+app = FastAPI()
 
-    def text2sql_chat(self):
-        while True:
-            query_str = input("Enter your query: ")
-            if query_str == "quit":
-                break
-
-            response = self.qp.run(query=query_str,)
-            # print(str(response))
-            print(response.message.content)
-            # return response.message.content
-
-
-
+# Initialize the text2sql object
 text2sql_obj = text2sql()
-text2sql_obj.text2sql_chat()
+
+class Query(BaseModel):
+    query: str
+
+@app.post("/text2sql")
+async def get_sql_response(query: Query):
+    try:
+        response = text2sql_obj.text2sql_response(query.query)
+        return {"result": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Text2SQL API"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

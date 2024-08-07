@@ -10,6 +10,7 @@ get_tablename_summary_str = (
 
 response_synthesis_prompt_str = (
     "Given an input question, synthesize a response from the query results.\n"
+    "Always ensure the response is in JSON format. Add column_names as keys, depending on the sql query.\n"
     "Query: {query_str}\n"
     "SQL: {sql_query}\n"
     "SQL Response: {context_str}\n"

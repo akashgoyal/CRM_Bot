@@ -1,0 +1,3 @@
+How many doctors ?
+Name the unique medical condition and Number of unique doctors who diagnosed patients under it?
+Name 5 patients, with their admission and discharge date in 2020
