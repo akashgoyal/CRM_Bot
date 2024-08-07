@@ -11,3 +11,4 @@ gradio
 uvicorn
 fastapi
 requests
+streamlit-aggrid

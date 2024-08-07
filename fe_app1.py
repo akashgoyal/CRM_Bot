@@ -4,14 +4,12 @@ from PIL import Image
 import io
 import base64
 import re, json
-
-# from main_agent1 import text2sql
-# @st.cache_resource
-# def get_text2sql_object():
-#     return text2sql()
-# text2sql_obj = get_text2sql_object()
-
 import requests
+import llms
+from llama_index.core.base.llms.types import CompletionResponse
+
+
+
 def process(query):
     url = "http://localhost:8000/text2sql"
     payload = { "query": query }
@@ -24,123 +22,172 @@ def process(query):
         print(f"Error: {response.status_code}")
         return response.text
     
-##
+def analyse_response(query, response):
+    prompt = f"""
+        Given the query: {query} 
+        Analyse its response: {response}
+        Is the query and response about a single entity or multiple entities?
+
+        If it is about a single entity, return the Role & Name in JSON format.
+        Output must be in JSON format, keys should be "Role" and "Name".
+        Don't create any new keys. Use only "Role" and "Name".
+        Return only the JSON output, don't attach any other text.
+        Make sure the output only have JSON format. No other text.
+        Example:
+        {{
+            "Role": "Doctor",
+            "Name": "Michael Johnson"
+        }}
+        
+        Otherwise, return 0.
+        """
+    response = llms.selected_llm.complete(prompt)
+    return response
+
+import random
+import base64
+image_files = ["dr_img1.png", "dr_img2.png", "dr_img3.png"]
+def get_doctor_info(json_response):
+    name = json_response.get("Name", "Michael Johnson")
+    address = "4th Square, Cool City, NYC, USA"
+    age = 37
+    image_path = image_files[random.randint(0, 2)]
+    with open(image_path, "rb") as image_file:
+        img = base64.b64encode(image_file.read()).decode('utf-8')
+    return { "name": name, "address": address, "age": age, "image": img }
+
+def get_patient_info():
+    pass
+
+
 def display_response_as_table(response):
     try:
-        # Try to parse the response as JSON
         data = json.loads(response)
     except json.JSONDecodeError:
-        st.error("Invalid JSON response")
+        # st.error("Invalid JSON response")
         st.text(response)
-        return
+        return None
 
     result_df = None
     if isinstance(data, dict):
-        # Case 1: Multiple categories with lists of dictionaries
         if all(isinstance(value, list) and all(isinstance(item, dict) for item in value) for value in data.values()):
+            dfs = {}
             for category, items in data.items():
-                st.subheader(category)
-                df = pd.DataFrame(items)
-                # st.table(df)
-                result_df = df
-        
-        # Case 2: Single dictionary with simple key-value pairs
+                dfs[category] = pd.DataFrame(items)
+            return dfs
         elif all(not isinstance(value, (dict, list)) for value in data.values()):
-            df = pd.DataFrame([data])
-            # st.table(df)
-            result_df = df
-        
-        # Case 3: Dictionary with lists of equal length
+            result_df = pd.DataFrame([data])
         elif all(isinstance(value, list) and len(value) == len(next(iter(data.values()))) for value in data.values()):
-            df = pd.DataFrame(data)
-            # st.table(df)
-            result_df = df
-
+            result_df = pd.DataFrame(data)
         else:
-            st.warning("Unrecognized data structure")
+            # st.warning("Unrecognized data structure")
             st.json(data)
             result_df = None
-    
     elif isinstance(data, list):
-        df = pd.DataFrame(data)
-        # st.table(df)
-        result_df = df
-    
+        result_df = pd.DataFrame(data)
     else:
-        st.warning("Unrecognized data structure")
+        # st.warning("Unrecognized data structure")
         st.json(data)
         result_df = None
     
     return result_df
-##
-
-# Function to convert dataframe to image
-def dataframe_to_image(df):
-    table_html = df.to_html(index=False)
-    return f"<img src='data:image/png;base64,{base64.b64encode(table_html.encode()).decode()}' style='width:100%'>"
 
 
-# Streamlit app
 def main():
-    st.title("Healthcare Database Chatbot")
+    st.title("Hospitals in State - CRM bot")
 
-    # Sidebar
     st.sidebar.title("Database Selection")
-    database = st.sidebar.selectbox("Choose a database", ["Database One", "Database Two"])
+    database = st.sidebar.selectbox("Choose a database", ["Chain of Hospitals", "Chain of Schools"])
 
-    # Database description
-    if database == "Database One":
-        st.sidebar.write("Database One contains information about hospital staff and patient records.")
+    if database == "Chain of Hospitals":
+        st.sidebar.write("DB for a Government Top Tier Medical Officer. This database contains information about Hospitals, Doctors, Patients records in the specific state.")
     else:
-        st.sidebar.write("Database Two contains information about medical procedures and equipment inventory.")
+        st.sidebar.write("NOT YET IMPLEMENTED. But this will have details of Schools, Students, Teachers, etc. in the specific state.")
 
-    # Main chat interface
-    st.subheader("Chat with the Healthcare Database")
+    st.subheader("Hello Medical Officer. Chat with the Healthcare Database")
 
-    # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
+    for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            if message["role"] == "assistant" and "table" in message:
+                if isinstance(message["table"], dict):
+                    for category, df in message["table"].items():
+                        st.subheader(category)
+                        st.table(df)
+                else:
+                    st.table(message["table"])
 
-    # React to user input
     if prompt := st.chat_input("What would you like to know?"):
-        # Display user message in chat message container
         st.chat_message("user").markdown(prompt)
-        # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Get LLM response using text2sql
         try:
             response = process(prompt)
         except Exception as e:
             response = f"An error occurred: {str(e)}"
 
-        # Display assistant response in chat message container
         with st.chat_message("assistant"):
-            st.markdown(response)
+            # st.markdown(response)
             df = display_response_as_table(response)
-            st.markdown(st.table(df))
+            analysis_resp = analyse_response(prompt, response)
 
-            # Example: Display an image (you may need to adjust this based on your actual response format)
-            if "image" in response.lower():
-                image = Image.open("placeholder_image.png")
-                st.image(image, caption="Placeholder Image")
+            print(analysis_resp)
+            if isinstance(analysis_resp, CompletionResponse):
+                try:
+                    analysis_resp = json.loads(analysis_resp.text)
+                except json.JSONDecodeError:
+                    print("Error: Unable to parse the response as JSON")
+                    analysis_resp = {}
+            elif isinstance(analysis_resp, str):
+                try:
+                    analysis_resp = json.loads(analysis_resp)
+                except json.JSONDecodeError:
+                    print("Error: Unable to parse the response as JSON")
+                    analysis_resp = {}
 
-            # Example: Display a table (you may need to adjust this based on your actual response format)
-            if "table" in response.lower():
-                # This is a placeholder. You should parse the actual SQL result into a DataFrame
-                df = pd.DataFrame({
-                    "Column1": [1, 2, 3],
-                    "Column2": ["A", "B", "C"]
-                })
+            print("##########")
+            print(analysis_resp)
+            print("##########")
+            print(type(analysis_resp))
+            print("###########")
+            doctor_card = None
+            if isinstance(analysis_resp, dict) and 'Role' in analysis_resp and 'Name' in analysis_resp:
+                if analysis_resp["Role"].lower() == "doctor":
+                    doc_dict = get_doctor_info(analysis_resp)
+                    doc_col1, doc_col2 = st.columns(2)
+                    with doc_col1:
+                        img_bytes = base64.b64decode(doc_dict["image"])
+                        st.image(img_bytes, caption="Doctor's Photo", use_column_width=True)
+                    with doc_col2:
+                        st.header(doc_dict["name"])
+                        st.subheader(f"{doc_dict['age']} years")
+                        st.subheader(f"{doc_dict['address']}")
+            else:
+                print("The response does not contain 'Role' and 'Name' keys or is not about a doctor.")
+            
+            if df is not None:
+                if isinstance(df, dict):
+                    for category, category_df in df.items():
+                        # st.subheader(category)
+                        # st.table(category_df)
+                        df = category_df
+                
                 st.table(df)
+                
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": "",
+                    "table": df
+                })
+            else:
+                st.session_state.messages.append({
+                    "role": "assistant", 
+                    "content": response
+                })
 
-        # Add assistant response to chat history
-        st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()

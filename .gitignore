@@ -1,5 +1,4 @@
 .env
-wiki_data
 *.zip
 *.html
 __pycache__
