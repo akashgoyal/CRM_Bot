@@ -3,3 +3,5 @@
 *.html
 __pycache__
 .DS_Store
+ppt/*
+agent1/wiki_data/college.csv
