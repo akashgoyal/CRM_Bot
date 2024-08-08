@@ -26,7 +26,7 @@ class text2sql():
         return response.message.content
 
 
-text2sql_obj = text2sql()
+# text2sql_obj = text2sql()
 # text2sql_obj.text2sql_chat()
 
 # query = "name the unique diseases and number of unique doctors who diagnosed patients under it"

@@ -8,6 +8,7 @@
 --- 
 
 #### 2. Start the FastAPI server, to interact with database
+##### uncomment lines 25,26,27 in `main.py` . then run
 `python main.py`
 
 ---
