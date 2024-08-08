@@ -1,4 +1,7 @@
+import os
 import streamlit as st
+os.environ["AI71_API_KEY"] = st.secrets["AI71_API_KEY"]
+
 import pandas as pd
 from PIL import Image
 import io
@@ -8,20 +11,14 @@ import requests
 import llms
 from llama_index.core.base.llms.types import CompletionResponse
 
+from main_agent1 import text2sql
+text2sql_obj = text2sql()
+
+import random
+import base64
+image_files = ["dr_img1.png", "dr_img2.png", "dr_img3.png"]
 
 
-def process(query):
-    url = "http://localhost:8000/text2sql"
-    payload = { "query": query }
-
-    response = requests.post(url, json=payload)
-    if response.status_code == 200:
-        result = response.json()
-        return result['result']
-    else:
-        print(f"Error: {response.status_code}")
-        return response.text
-    
 def analyse_response(query, response):
     prompt = f"""
         Given the query: {query} 
@@ -44,9 +41,7 @@ def analyse_response(query, response):
     response = llms.selected_llm.complete(prompt)
     return response
 
-import random
-import base64
-image_files = ["dr_img1.png", "dr_img2.png", "dr_img3.png"]
+
 def get_doctor_info(json_response):
     name = json_response.get("Name", "Michael Johnson")
     address = "4th Square, Cool City, NYC, USA"
@@ -125,7 +120,8 @@ def main():
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         try:
-            response = process(prompt)
+            # response = process(prompt)
+            response = text2sql_obj.text2sql_response(prompt)
         except Exception as e:
             response = f"An error occurred: {str(e)}"
 
