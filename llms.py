@@ -1,7 +1,9 @@
 import os
 from dotenv import load_dotenv
 load_dotenv('.env')
-ai71_api_key = os.getenv("AI71_API_KEY", None)
+ai71_api_key = os.environ.get("AI71_API_KEY", None)
+if ai71_api_key is None:
+    ai71_api_key = os.getenv("AI71_API_KEY", None)
 ##
 from typing import Any, Optional
 from llama_index.llms.openai_like import OpenAILike
@@ -21,7 +23,6 @@ class AI71LLM(OpenAILike):
         """Get class name."""
         return "AI71LLM"
 ##
-
 
 def ai71_falcon_11b_init():
     llm = AI71LLM(api_key=ai71_api_key, model="tiiuae/falcon-11b")
