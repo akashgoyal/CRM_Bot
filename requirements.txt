@@ -3,6 +3,8 @@ llama-index
 python-dotenv
 llama-index-llms-huggingface
 llama-index-embeddings-huggingface
+llama-index-llms-openai
+llama-index-embeddings-openai
 streamlit
 uvicorn
 fastapi
