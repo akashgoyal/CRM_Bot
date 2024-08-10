@@ -10,4 +10,4 @@ streamlit
 uvicorn
 fastapi[all]
 requests
-# pyvis
+pyvis
