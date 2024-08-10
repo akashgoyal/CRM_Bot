@@ -14,7 +14,8 @@ from llama_index.core.base.llms.types import CompletionResponse
 
 
 def process(query):
-    url = "http://localhost:8000/text2sql"
+    # url = "http://localhost:8000/text2sql"
+    url = "https://fastapi-crmbot.onrender.com/text2sql"
     payload = { "query": query }
 
     response = requests.post(url, json=payload)

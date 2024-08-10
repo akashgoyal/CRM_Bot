@@ -8,7 +8,7 @@ from llama_index.core.prompts import PromptTemplate
 import llms
 import agent1.prompts as prompts
 from agent1.sql_module import sql_module_obj
-from pyvis.network import Network
+# from pyvis.network import Network
 
 class QueryPipeline:
     def __init__(self):
@@ -56,10 +56,10 @@ class QueryPipeline:
 
         return qp
 
-    def visualize_query_pipeline(self, qp):
-        net = Network(notebook=True, cdn_resources="in_line", directed=True)
-        net.from_nx(qp.dag)
-        net.show("text2sql_dag.html")
+    # def visualize_query_pipeline(self, qp):
+    #     net = Network(notebook=True, cdn_resources="in_line", directed=True)
+    #     net.from_nx(qp.dag)
+    #     net.show("text2sql_dag.html")
 
 # query_pipeline = QueryPipeline()
 # qp = query_pipeline.create_query_pipeline()
