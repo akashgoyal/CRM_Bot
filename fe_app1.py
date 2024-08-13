@@ -15,7 +15,7 @@ from llama_index.core.base.llms.types import CompletionResponse
 
 def process(query):
     # url = "http://localhost:8000/text2sql"
-    url = "https://fastapi-crmbot.onrender.com:8080/text2sql"
+    url = "http://34.45.105.83:8080/text2sql"
     payload = { "query": query }
 
     response = requests.post(url, json=payload)
@@ -55,7 +55,7 @@ def get_doctor_info(json_response):
     name = json_response.get("Name", "Michael Johnson")
     address = "4th Square, Cool City, NYC, USA"
     age = 37
-    image_path = image_files[random.randint(0, 2)]
+    image_path = "images/" + image_files[random.randint(0, 2)]
     with open(image_path, "rb") as image_file:
         img = base64.b64encode(image_file.read()).decode('utf-8')
     return { "name": name, "address": address, "age": age, "image": img }
@@ -110,6 +110,43 @@ def main():
 
     st.subheader("Hello Medical Officer. Chat with the Healthcare Database")
 
+     #
+    prompt = st.chat_input("What would you like to know?")
+    demo_questions = [
+        "How many patient ?",
+        "Which doctor handled most Obesity cases.",
+        "Name 5 patients, with their admission and discharge date in 2020.",
+        "Name the unique medical condition and Number of unique doctors who diagnosed patients under it?",
+        "Give patient details who was billed the highest in hospital Kim Inc.",
+        "Which doctor handled most Cancer cases.",
+        "Name all insurance companies and the total billing amount they have processed."
+    ]
+
+    # st.markdown("<small>Demo questions (click to select):</small>", unsafe_allow_html=True)
+     # Custom CSS for button layout
+    st.markdown("""
+        <style>
+        .stButton > button {
+            font-size: 0.1em;
+            padding: 1px 4px;
+            margin: 1px;
+            color: #f000f0;
+        }
+        div.row-widget.stHorizontal {
+            flex-wrap: wrap;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+    # Create columns for buttons
+    cols = st.columns(4)  # You can adjust the number of columns as needed
+
+    for i, question in enumerate(demo_questions):
+        if cols[i % 4].button(question, key=f"q_{i}"):
+            prompt = question
+    # st.write("Click on the demo questions to ask them.")
+
+    # 
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
@@ -123,8 +160,8 @@ def main():
                         st.table(df)
                 else:
                     st.table(message["table"])
-
-    if prompt := st.chat_input("What would you like to know?"):
+    
+    if prompt: # := st.chat_input("What would you like to know?"):
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
 
@@ -152,11 +189,11 @@ def main():
                     print("Error: Unable to parse the response as JSON")
                     analysis_resp = {}
 
-            print("##########")
-            print(analysis_resp)
-            print("##########")
-            print(type(analysis_resp))
-            print("###########")
+            # print("##########")
+            # print(analysis_resp)
+            # print("##########")
+            # print(type(analysis_resp))
+            # print("###########")
             doctor_card = None
             if isinstance(analysis_resp, dict) and 'Role' in analysis_resp and 'Name' in analysis_resp:
                 if analysis_resp["Role"].lower() == "doctor":

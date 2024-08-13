@@ -1,3 +1,7 @@
 How many doctors ?
 Name the unique medical condition and Number of unique doctors who diagnosed patients under it?
-Name 5 patients, with their admission and discharge date in 2020
+Name 5 patients, with their admission and discharge date in 2020.
+Give patient details who was billed the highest in hospital Kim Inc.
+Which doctor handled most Obesity cases.
+Which doctor handled most Cancer cases in year 2023.
+Name all the insurance companies and the total billing amount they have dealt with over all years.
